@@ -1,8 +1,74 @@
+<?php  
+drupal_add_js(drupal_get_path('theme','addenda_zen') . '/explore-visualization/js/underscore-min.js');
+drupal_add_js(drupal_get_path('theme','addenda_zen') . '/explore-visualization/js/pourover.js');
+?>
 <script>
-$(function() {
+jQuery(function() {
 
-	$.ajax('memories.json').done(function(msg) {
-	});	
+	jQuery.get('<?php print path_to_theme(); ?>/explore-visualization/memories.json', function(memories){
+			init(memories);
+		}
+	);
+
+	function init(memories){
+
+		var collection = new PourOver.Collection(memories);
+
+		// build filters
+		var filterNames = [
+			'subject',
+			'action',
+			'location',
+			'object',
+			'category',
+			'date',
+			'country',
+			'geography',
+			'archetype',
+			'archetype2',
+		];
+		var filters = [];
+		for (var i = filterNames.length - 1; i >= 0; i--) {
+			var filterName = filterNames[i];
+			// need to pass in all possible values when creating the filter
+			var values = [];
+			for (var j = memories.length - 1; j >= 0; j--) {
+				var memory = memories[j];
+				if (values.indexOf(memory[filterName]) == -1) {
+					values.push(memory[filterName]);
+				}
+			}
+			filters[filterName] = PourOver.makeExactFilter("category", values);
+		}
+		collection.addFilters(filters);
+
+		var GridView = PourOver.View.extend({
+			render: function(){
+				var current_items = this.getCurrentItems();
+				console.log("num items found: " + current_items.length);
+				var html = '';
+				current_items.forEach(function(memory, i) {
+					var title = '';
+					title += 'name: ' + memory.title + "\n";
+					title += 'id: ' + memory.id + "\n";
+					title += 'duration: ' + memory.duration + " seconds\n";
+					title += 'start_time: ' + memory.start_time + " seconds\n\n";
+					for (var j = 0; j < filterNames.length; j++) {
+						title += filterNames[j] + ': ' + memory[filterNames[j]] + "\n";
+					}
+					var url = 'http://staging03.dough.be/addenda/node/' + memory.id;
+					html += '<a href="' + url + '" target="_blank" + title="' + title + '" videoUrl="' + memory.url + '" start_time="' + memory.start_time + '"><img src="http://staging03.dough.be/addenda/sites/default/files/' + memory.thumb + '" width="50"></a>';
+				});
+				jQuery("#results").html(html);
+			}
+		});
+		var view = new GridView("grid_view", collection, {page_size: 100});
+		view.on("update", function(){
+			view.render(); 
+		});
+		view.render();
+
+	}
 
 });
 </script>
