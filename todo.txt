@@ -1,9 +1,15 @@
 - design cleanup
+	- hardcode filters widths (check http://addenda_drupal.dev/explore?geography=Tenerife&category=TRAVEL&action=shopping)
 - lightbox
+	- adjust detail page
 
 - free text search
-- structure code
 - compress data
 
 - history
+	- pressing back btn doesn't work
+	- paging and history doesn't work -> page param is dropped
 - remember filter toggle state
+
+- move inline styles to CSS
+- structure code

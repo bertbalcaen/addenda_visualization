@@ -12,6 +12,8 @@ jQuery(function() {
 	var view;
 	var uiElements = [];
 	var ITEMS_PER_PAGE = 7 * 16;
+	var activeFilters = [];
+	var queryStringChecked = false;
 
 	jQuery('#filters').hide();
 
@@ -56,7 +58,14 @@ jQuery(function() {
 					}
 				}
 			}
-			collection.addFilters(PourOver.makeExactFilter(filterName, filterValues));
+			var filter;
+			if (['action', 'object', 'geography'].indexOf(filterName) != -1) {
+				// these are multi-value fields
+				filter = PourOver.makeInclusionFilter(filterName, filterValues);
+			} else {
+				filter = PourOver.makeExactFilter(filterName, filterValues);
+			}
+			collection.addFilters(filter);
 			// create UI element
 			var select = new PourOver.UI.SimpleSelectElement({
 				filter: collection.filters[filterName],
@@ -116,15 +125,6 @@ jQuery(function() {
 					html += '</ul>';
 					var filterElement = jQuery('[data-filter-name="' + this.filter.name + '"]');
 					filterElement.find('.items').html(html);
-					// clear btn
-					var clearBtn = filterElement.find('.clear');
-					if (!vals.state) {
-						clearBtn.html("");
-						clearBtn.css('visibility', 'hidden');
-					} else {
-						clearBtn.html('<span title="clear filter">x ' + vals.state[0] + '</a>');
-						clearBtn.css('visibility', '');
-					}
 				}
 			});
 			uiElements.push(select);
@@ -139,19 +139,22 @@ jQuery(function() {
 		// filter when clicking on an item
 		jQuery('.filter li').live('click', function(){
 			var filterName = jQuery(this).parents('[data-filter-name]').attr('data-filter-name');
-			var filter = collection.filters[filterName];
 			var val = jQuery(this).attr('data-filter-item-value');
 			// console.log(" clicked filter: " + filterName + " value " + val);
-			filters[filterName] = [];
-			filters[filterName].push(val);
-			filter.query(val);
+			applyFilter(filterName, val);
 			// update UI
 			renderUI();
 		});
 
+		function applyFilter(filterName, val){
+			var filter = collection.filters[filterName];
+			filter.query(val);
+			activeFilters[filterName] = val;
+		}
+
 		// clear filter when clicking on button
-		jQuery('.filter .clear').click(function(){
-			var filterName = jQuery(this).parents('[data-filter-name]').attr('data-filter-name');
+		jQuery('#activeFilters .clear').live('click', function(){
+			var filterName = jQuery(this).attr('data-filter-name');
 			clearFilter(filterName);
 			renderUI();
 		});
@@ -165,6 +168,7 @@ jQuery(function() {
 		function clearFilter(filterName){
 			var filter = collection.filters[filterName];
 			filter.clearQuery();
+			delete activeFilters[filterName];
 		}
 
 		function clearFilters(){
@@ -180,6 +184,25 @@ jQuery(function() {
 			return false;
 		});
 
+		function checkQueryString(){
+
+			for (var filterName in collection.filters) {
+				var val = QueryString[filterName];
+				if (val) {
+					applyFilter(filterName, decodeURIComponent(val));
+				}
+			}
+
+			if(QueryString.page){
+				view.setPage(parseInt(QueryString.page));
+			}
+
+			queryStringChecked = true;
+
+		}
+
+		checkQueryString();
+
 		renderUI();
 
 	}
@@ -190,7 +213,7 @@ jQuery(function() {
 		}
 		updatePagination();
 		updateNumResults();
-		// updateHistory();
+		updateActiveFilters();
 	}
 
 	function updatePagination(){
@@ -208,9 +231,9 @@ jQuery(function() {
 		});
 
 		if (view.match_set.cids.length < ITEMS_PER_PAGE) {
-			jQuery("#pagination").hide();
+			jQuery("#pagination").css('visibility', 'hidden');
 		} else {
-			jQuery("#pagination").show();
+			jQuery("#pagination").css('visibility', '');
 		}
 
 		if (view.match_set.cids.length === 0) {
@@ -234,24 +257,51 @@ jQuery(function() {
 
 	function updateHistory(){
 
+		if (!queryStringChecked) {
+			return;
+		}
+
 		if (window.history && window.history.pushState){
 			var frags = [];
-			if(filters['sector']){
-				frags.push('sector=' + encodeURIComponent(filters['sector']));
+			for(var filterName in activeFilters){
+				frags.push(filterName  + '=' + encodeURIComponent(activeFilters[filterName]));
 			}
-			if(filters['occupation']){
-				frags.push('beroep=' + encodeURIComponent(filters['occupation']));
-			}
-			if(filters['region']){
-				frags.push('regio=' + encodeURIComponent(filters['region']));
+			if (view.current_page) {
+				frags.push('page=' + view.current_page);
 			}
 			var fragsStr = '';
-			if (frags) {
+			if (frags.length > 0) {
 				fragsStr = '?' + frags.join('&');
 			}
 			// console.log(fragsStr);
-			history.pushState({}, "Zoeken", "/zoeken" + fragsStr);
+			history.pushState({}, "Explore", "explore" + fragsStr);
 		}
+
+	}
+
+	function updateActiveFilters(){
+
+		var map = {
+			'subject': 'Subject',
+			'action': 'Action',
+			'location': 'Location',
+			'object': 'Object',
+			'category': 'Category',
+			'date': 'Date',
+			'country': 'Country',
+			'geography': 'Geography',
+			'archetype': 'Formal archetype',
+			'archetype2': 'Thematic archetype'
+		};
+
+		var pieces = [];
+		for(var filterName in activeFilters){
+			var piece = '<span class="clear" data-filter-name="' + filterName + '" title="clear filter"><em>' + map[filterName] + '</em> ' + activeFilters[filterName] + '</span>';
+			pieces.push(piece);
+		}
+		var html = '';
+		html += pieces.join(', ');
+		jQuery('#activeFilters').html(html);
 
 	}
 
@@ -273,10 +323,11 @@ jQuery(function() {
 						var filter = collection.filters[j];
 						title += filter.name + ': ' + memory[filter.name] + "\n";
 					}
-					var url = 'http://staging03.dough.be/addenda/node/' + memory.id;
+					var url = 'node/' + memory.id;
 					html += '<a href="' + url + '" target="_blank" + title="' + title + '" videoUrl="' + memory.url + '" start_time="' + memory.start_time + '"><img src="http://staging03.dough.be/addenda/sites/default/files/' + memory.thumb + '" width="75"></a>';
 				});
 				jQuery("#results").html(html);
+				updateHistory();
 			}
 		});
 
@@ -288,7 +339,7 @@ jQuery(function() {
 		var SortByIdDesc = PourOver.Sort.extend({
 			attr: "id",
 			fn: function(a,b){
-				return a-b;
+				return b-a;
 			}
 		});
 		var sortByIdDesc = new SortByIdDesc("by_id_desc");
@@ -299,17 +350,47 @@ jQuery(function() {
 
 		jQuery('#filters').show();
 
+		jQuery('#results a').live('click', function(){
+			jQuery.colorbox({href: jQuery(this).attr('href')});
+			jQuery.colorbox.resize({width: 800, height: 600});
+			return false;
+		});
+
 	}
+
+	var QueryString = function () {
+		// This function is anonymous, is executed immediately and 
+		// the return value is assigned to QueryString!
+		var query_string = {};
+		var query = window.location.search.substring(1);
+		var vars = query.split("&");
+		for (var i=0;i<vars.length;i++) {
+			var pair = vars[i].split("=");
+				// If first entry with this name
+			if (typeof query_string[pair[0]] === "undefined") {
+				query_string[pair[0]] = pair[1];
+				// If second entry with this name
+			} else if (typeof query_string[pair[0]] === "string") {
+				var arr = [ query_string[pair[0]], pair[1] ];
+				query_string[pair[0]] = arr;
+				// If third or later entry with this name
+			} else {
+				query_string[pair[0]].push(pair[1]);
+			}
+		} 
+			return query_string;
+	} ();
 
 });
 </script>
 <div class="clearfix">
-	<div id="search" style="width: 75%; float: left;">
+	<div id="search" style="width: 90%; float: left;">
 		<label for="searchKeyword">Search</label>
 		<input type="text" name="searchKeyword" id="searchKeyword" placeholder="Keywords">
 		<button class="clearSearchKeyword">Clear</button>
+		<span id="activeFilters"></span>
 	</div>
-	<div style="width: 25%; float: left; text-align: right;">
+	<div style="width: 10%; float: left; text-align: right;">
 		<button class="toggleFilters">Toggle filters</button>
 	</div>
 </div>
@@ -318,25 +399,21 @@ jQuery(function() {
 		<h1>Action</h1>
 		<div class="filter" data-filter-name="subject">
 			<h2>Subject</h2>
-			<div class="clear"></div>
 			<div class="items">
 			</div>
 		</div>
 		<div class="filter" data-filter-name="action">
 			<h2>Action</h2>
-			<div class="clear"></div>				
 			<div class="items">
 			</div>
 		</div>
 		<div class="filter" data-filter-name="location">
 			<h2>Location</h2>
-			<div class="clear"></div>				
 			<div class="items">
 			</div>
 		</div>
 		<div class="filter last" data-filter-name="object">
 			<h2>Object</h2>
-			<div class="clear"></div>				
 			<div class="items">
 			</div>
 		</div>
@@ -345,25 +422,21 @@ jQuery(function() {
 		<h1>Specification</h1>
 		<div class="filter" data-filter-name="category">
 			<h2>Category</h2>
-			<div class="clear"></div>				
 			<div class="items">
 			</div>
 		</div>
 		<div class="filter" data-filter-name="date">
 			<h2>Date</h2>
-			<div class="clear"></div>				
 			<div class="items">
 			</div>
 		</div>
 		<div class="filter" data-filter-name="country">
 			<h2>Country</h2>
-			<div class="clear"></div>				
 			<div class="items">
 			</div>
 		</div>
 		<div class="filter last" data-filter-name="geography">
 			<h2>Geography</h2>
-			<div class="clear"></div>				
 			<div class="items">
 			</div>
 		</div>
@@ -372,33 +445,45 @@ jQuery(function() {
 		<h1>Archetype</h1>
 		<div class="filter" data-filter-name="archetype">
 			<h2>Formal</h2>
-			<div class="clear"></div>				
 			<div class="items">
 			</div>
 		</div>
 		<div class="filter last" data-filter-name="archetype2">
 			<h2>Thematic</h2>
-			<div class="clear"></div>				
 			<div class="items">
 			</div>
 		</div>
 	</div>
 </div>
 <div class="clearfix" id="paginationAndNumResults">
-	<div id="pagination" class="pager clearfix" style="width: 75%; float: left;"></div>
-	<div id="numResults" style="width: 25%; float: left;"></div>
+	<div id="pagination" class="pager clearfix" style="width: 70%; float: left;"></div>
+	<div id="numResults" style="width: 30%; float: left;"></div>
 </div>
 <div id="results">
 </div>
 
 <style>
-#filters{
-	/*width: 100%;*/
+#activeFilters .clear{
+	text-transform: lowercase;
+	cursor: pointer;
+}
+
+#activeFilters .clear:hover{
+	text-decoration: line-through;
+}
+
+#search{
+	height: 24px;
 	overflow: hidden;
 }
 
 #search label{
 	display: inline;
+}
+
+#filters{
+	/*width: 100%;*/
+	overflow: hidden;
 }
 
 .filterGroup{
@@ -424,13 +509,6 @@ jQuery(function() {
 	float: left;
 	/*width: 120px;*/
 	margin-right: .5em;
-}
-.filter .clear{
-	height: 1em;
-	cursor: pointer;
-	font-size: .75em;
-	color: red;
-	text-transform: lowercase;
 }
 .filter .items{
 	height: 150px;
