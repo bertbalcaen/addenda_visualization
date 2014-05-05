@@ -15,27 +15,12 @@ jQuery(function() {
 
 	jQuery('#filters').hide();
 
-	jQuery.ajax({
-		url: '<?php print path_to_theme(); ?>/explore-visualization/memories.json', 
-		type: 'GET',
-		contentType: 'application/json',
-		dataType: 'json',
-		complete: function(xhr, status){
-			if(xhr.readyState === 4) {
-				var memories = JSON.parse(xhr.response);
-				collection = new PourOver.Collection(memories);
-				initView();
-				initUI();
-			} else {
-				console.log('Could not load data');
-			}
-		},
-		beforeSend: function(xhr){
-			xhr.setRequestHeader("Content-Type","application/json");
-			xhr.setRequestHeader("Accept", "application/json");
-			xhr.overrideMimeType("application/json");
+	jQuery.get('<?php print path_to_theme(); ?>/explore-visualization/memories.json', function(memories){
+			collection = new PourOver.Collection(memories);
+			initView();
+			initUI();
 		}
-	});
+	);
 
 	function initUI(){
 
