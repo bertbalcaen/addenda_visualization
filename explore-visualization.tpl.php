@@ -20,14 +20,15 @@ jQuery(function() {
 		type: 'GET',
 		contentType: 'application/json',
 		dataType: 'json',
-		succes: function(memories){
-			console.log('load');
-			collection = new PourOver.Collection(memories);
-			initView();
-			initUI();
-		},
-		error: function(){ 
-			console.log('Could not load data');
+		complete: function(xhr, status){
+			if(xhr.readyState === 4) {
+				var memories = JSON.parse(xhr.response);
+				collection = new PourOver.Collection(memories);
+				initView();
+				initUI();
+			} else {
+				console.log('Could not load data');
+			}
 		},
 		beforeSend: function(xhr){
 			xhr.setRequestHeader("Content-Type","application/json");
