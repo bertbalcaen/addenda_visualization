@@ -1,0 +1,9 @@
+- design cleanup
+- lightbox
+
+- free text search
+- structure code
+- compress data
+
+- history
+- remember filter toggle state
