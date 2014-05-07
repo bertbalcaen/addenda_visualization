@@ -50,6 +50,8 @@ jQuery(function() {
 				var values = memory[filterName];
 				if (typeof values == 'string') {
 					values = [values];
+				} elseif (typeof values == 'undefined') {
+					values = [values];
 				}
 				for (var k = values.length - 1; k >= 0; k--) {
 					var value = values[k]
