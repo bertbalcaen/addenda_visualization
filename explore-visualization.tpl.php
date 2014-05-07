@@ -18,6 +18,7 @@ jQuery(function() {
 	jQuery('#filters').hide();
 
 	jQuery.get('<?php print path_to_theme(); ?>/explore-visualization/memories.json', function(memories){
+			console.log(memories.length);
 			collection = new PourOver.Collection(memories);
 			initView();
 			initUI();
