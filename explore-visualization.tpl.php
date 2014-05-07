@@ -17,7 +17,7 @@ jQuery(function() {
 
 	jQuery('#filters').hide();
 
-	jQuery.get('<?php print path_to_theme(); ?>/explore-visualization/memories.json', function(memories){
+	jQuery.getJSON('<?php print path_to_theme(); ?>/explore-visualization/memories.json', function(memories){
 			console.log(memories.length);
 			collection = new PourOver.Collection(memories);
 			initView();
@@ -50,8 +50,6 @@ jQuery(function() {
 				var memory = collection.items[j];
 				var values = memory[filterName];
 				if (typeof values == 'string') {
-					values = [values];
-				} else if (typeof values == 'undefined') {
 					values = [values];
 				}
 				for (var k = values.length - 1; k >= 0; k--) {
