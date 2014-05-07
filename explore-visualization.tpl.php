@@ -14,6 +14,7 @@ jQuery(function() {
 	var ITEMS_PER_PAGE = 7 * 16;
 	var activeFilters = [];
 	var queryStringChecked = false;
+	var lastUrl = 'explore' + window.location.search;
 
 	jQuery('#filters').hide();
 
@@ -57,15 +58,21 @@ jQuery(function() {
 						filterValues.push(value);
 					}
 				}
+				// cache for use in free text search
+				if (typeof(memory.values) === 'undefined') {
+					memory.values = values;
+				} else {
+					memory.values = memory.values.concat(values);
+				}
 			}
-			var filter;
+			var selectFilter;
 			if (['action', 'object', 'geography'].indexOf(filterName) != -1) {
 				// these are multi-value fields
-				filter = PourOver.makeInclusionFilter(filterName, filterValues);
+				selectFilter = PourOver.makeInclusionFilter(filterName, filterValues);
 			} else {
-				filter = PourOver.makeExactFilter(filterName, filterValues);
+				selectFilter = PourOver.makeExactFilter(filterName, filterValues);
 			}
-			collection.addFilters(filter);
+			collection.addFilters(selectFilter);
 			// create UI element
 			var select = new PourOver.UI.SimpleSelectElement({
 				filter: collection.filters[filterName],
@@ -128,13 +135,47 @@ jQuery(function() {
 				}
 			});
 			uiElements.push(select);
-			// make column widths fixed
-			setTimeout(function(){
-				jQuery('.filter').each(function(index, el){
-					jQuery(el).css('width', (jQuery(el).width()) + 'px');
-				});
-			}, 1000);
+
 		}
+
+		var freeTextSearchFilter = PourOver.makeManualFilter("freeTextSearch");
+		collection.addFilters(freeTextSearchFilter);
+
+		jQuery("#searchKeyword").keyup(function(){
+			var searchKeyword = jQuery(this).val().toLowerCase();
+			var filter = collection.filters.freeTextSearch;
+			filter.clearQuery();
+			if(searchKeyword.length){
+				var ids = [];
+				for (var i = collection.items.length - 1; i >= 0; i--) {
+					var memory = collection.items[i];
+					for (var j = memory.values.length - 1; j >= 0; j--) {
+						var val = memory.values[j];
+						val = val + "";
+						if (val.toLowerCase().indexOf(searchKeyword) !== -1) {
+							ids.push(memory.cid);
+							break;
+						}
+					}
+				}
+				filter.addItems(ids);
+			} else {
+				filter.clearQuery();
+			}
+			renderUI();
+		});
+
+		jQuery(".clearSearchKeyword").click(function(){
+			jQuery("#searchKeyword").val('');
+			jQuery("#searchKeyword").keyup();
+		});
+
+		// make column widths fixed
+		setTimeout(function(){
+			jQuery('.filter').each(function(index, el){
+				jQuery(el).css('width', (jQuery(el).width()) + 'px');
+			});
+		}, 1000);
 
 		// filter when clicking on an item
 		jQuery('.filter li').live('click', function(){
@@ -162,7 +203,6 @@ jQuery(function() {
 		// clear filter when clicking on button
 		jQuery('.clearAllFilters').live('click', function(){
 			clearFilters();
-			return false;
 		});
 
 		function clearFilter(filterName){
@@ -172,9 +212,10 @@ jQuery(function() {
 		}
 
 		function clearFilters(){
-			for (var i = 0; i < filterNames.length; i++) {
-				clearFilter(filterNames[i]);
+			for (var filterName in collection.filters) {
+				clearFilter(filterName);
 			}
+			jQuery("#searchKeyword").val('');
 			renderUI();
 		}
 
@@ -191,6 +232,11 @@ jQuery(function() {
 				if (val) {
 					applyFilter(filterName, decodeURIComponent(val));
 				}
+			}
+
+			if(QueryString.searchKeyword){
+				jQuery('#searchKeyword').val(decodeURIComponent(QueryString.searchKeyword));
+				jQuery('#searchKeyword').val();
 			}
 
 			if(QueryString.page){
@@ -249,7 +295,7 @@ jQuery(function() {
 		// html += '<p>';
 		html += numMatches + ' of ' + collection.items.length + ' memories filtered (' + Math.ceil((numMatches/numTotal) * 100) + '%)';
 		if (numMatches != numTotal) {
-			html += ' <a href="#" class="clearAllFilters">Clear filters</a>';
+			html += ' <button class="clearAllFilters">Clear filters</button>';
 		}
 		// html += '</p>';
 		jQuery("#numResults").html(html);	
@@ -266,6 +312,9 @@ jQuery(function() {
 			for(var filterName in activeFilters){
 				frags.push(filterName  + '=' + encodeURIComponent(activeFilters[filterName]));
 			}
+			if (jQuery('#searchKeyword').val()) {
+				frags.push('searchKeyword=' + encodeURIComponent(jQuery('#searchKeyword').val()));
+			}
 			if (view.current_page) {
 				frags.push('page=' + view.current_page);
 			}
@@ -273,30 +322,20 @@ jQuery(function() {
 			if (frags.length > 0) {
 				fragsStr = '?' + frags.join('&');
 			}
-			// console.log(fragsStr);
-			history.pushState({}, "Explore", "explore" + fragsStr);
+			var url = "explore" + fragsStr;
+			if (url != lastUrl) {
+				history.pushState({}, "Explore", url);
+				lastUrl = url;
+			}
 		}
 
 	}
 
 	function updateActiveFilters(){
 
-		var map = {
-			'subject': 'Subject',
-			'action': 'Action',
-			'location': 'Location',
-			'object': 'Object',
-			'category': 'Category',
-			'date': 'Date',
-			'country': 'Country',
-			'geography': 'Geography',
-			'archetype': 'Formal archetype',
-			'archetype2': 'Thematic archetype'
-		};
-
 		var pieces = [];
 		for(var filterName in activeFilters){
-			var piece = '<span class="clear" data-filter-name="' + filterName + '" title="clear filter"><em>' + map[filterName] + '</em> ' + activeFilters[filterName] + '</span>';
+			var piece = '<span class="clear" data-filter-name="' + filterName + '" title="clear filter"><em>' + humanFilterName(filterName) + '</em> ' + activeFilters[filterName] + '</span>';
 			pieces.push(piece);
 		}
 		var html = '';
@@ -316,12 +355,12 @@ jQuery(function() {
 				current_items.forEach(function(memory, i) {
 					var title = '';
 					title += 'name: ' + memory.title + "\n";
-					title += 'id: ' + memory.id + "\n";
-					title += 'duration: ' + memory.duration + " seconds\n";
-					title += 'start_time: ' + memory.start_time + " seconds\n\n";
-					for (var j = 0; j < collection.filters.length; j++) {
-						var filter = collection.filters[j];
-						title += filter.name + ': ' + memory[filter.name] + "\n";
+					for (var filterName in collection.filters) {
+						if (typeof(memory[filterName]) == 'undefined') {
+							continue;
+						}
+						var filter = collection.filters[filterName];
+						title += humanFilterName(filterName) + ': ' + memory[filterName] + "\n";
 					}
 					var url = 'node/' + memory.id;
 					html += '<a href="' + url + '" target="_blank" + title="' + title + '" videoUrl="' + memory.url + '" start_time="' + memory.start_time + '"><img src="http://staging03.dough.be/addenda/sites/default/files/' + memory.thumb + '" width="75"></a>';
@@ -332,9 +371,6 @@ jQuery(function() {
 		});
 
 		view = new GridView("grid_view", collection, {page_size: ITEMS_PER_PAGE});
-		view.on("update", function(){
-			view.render();
-		});
 
 		var SortByIdDesc = PourOver.Sort.extend({
 			attr: "id",
@@ -346,7 +382,9 @@ jQuery(function() {
 		collection.addSorts([sortByIdDesc]);
 		view.setSort("by_id_desc");
 		
-		view.render();
+		view.on("update", function(){
+			view.render();
+		});
 
 		jQuery('#filters').show();
 
@@ -356,6 +394,22 @@ jQuery(function() {
 			return false;
 		});
 
+	}
+
+	function humanFilterName(filterName){
+		var map = {
+			'subject': 'Subject',
+			'action': 'Action',
+			'location': 'Location',
+			'object': 'Object',
+			'category': 'Category',
+			'date': 'Date',
+			'country': 'Country',
+			'geography': 'Geography',
+			'archetype': 'Formal archetype',
+			'archetype2': 'Thematic archetype'
+		};
+		return map[filterName];
 	}
 
 	var QueryString = function () {
@@ -387,7 +441,7 @@ jQuery(function() {
 	<div id="search" style="width: 90%; float: left;">
 		<label for="searchKeyword">Search</label>
 		<input type="text" name="searchKeyword" id="searchKeyword" placeholder="Keywords">
-		<button class="clearSearchKeyword">Clear</button>
+		<button class="clearSearchKeyword">Clear search</button>
 		<span id="activeFilters"></span>
 	</div>
 	<div style="width: 10%; float: left; text-align: right;">
