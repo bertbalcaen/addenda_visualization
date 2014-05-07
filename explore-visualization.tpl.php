@@ -13,7 +13,6 @@ jQuery(function() {
 	var uiElements = [];
 	var ITEMS_PER_PAGE = 7 * 16;
 	var activeFilters = [];
-	var queryStringChecked = false;
 	var lastUrl = 'explore' + window.location.search;
 
 	jQuery('#filters').hide();
@@ -170,13 +169,6 @@ jQuery(function() {
 			jQuery("#searchKeyword").keyup();
 		});
 
-		// make column widths fixed
-		setTimeout(function(){
-			jQuery('.filter').each(function(index, el){
-				jQuery(el).css('width', (jQuery(el).width()) + 'px');
-			});
-		}, 1000);
-
 		// filter when clicking on an item
 		jQuery('.filter li').live('click', function(){
 			var filterName = jQuery(this).parents('[data-filter-name]').attr('data-filter-name');
@@ -243,8 +235,6 @@ jQuery(function() {
 				view.setPage(parseInt(QueryString.page));
 			}
 
-			queryStringChecked = true;
-
 		}
 
 		checkQueryString();
@@ -260,6 +250,8 @@ jQuery(function() {
 		updatePagination();
 		updateNumResults();
 		updateActiveFilters();
+		jQuery('.clearAllFilters').attr('disabled', collection.items.length == view.match_set.cids.length);
+		jQuery(".clearSearchKeyword").attr('disabled', jQuery('#searchKeyword').val().length == 0);
 	}
 
 	function updatePagination(){
@@ -294,18 +286,11 @@ jQuery(function() {
 		var html = '';
 		// html += '<p>';
 		html += numMatches + ' of ' + collection.items.length + ' memories filtered (' + Math.ceil((numMatches/numTotal) * 100) + '%)';
-		if (numMatches != numTotal) {
-			html += ' <button class="clearAllFilters">Clear filters</button>';
-		}
 		// html += '</p>';
 		jQuery("#numResults").html(html);	
 	}
 
 	function updateHistory(){
-
-		if (!queryStringChecked) {
-			return;
-		}
 
 		if (window.history && window.history.pushState){
 			var frags = [];
@@ -438,13 +423,14 @@ jQuery(function() {
 });
 </script>
 <div class="clearfix">
-	<div id="search" style="width: 90%; float: left;">
+	<div id="search" style="width: 80%; float: left;">
 		<label for="searchKeyword">Search</label>
 		<input type="text" name="searchKeyword" id="searchKeyword" placeholder="Keywords">
 		<button class="clearSearchKeyword">Clear search</button>
 		<span id="activeFilters"></span>
 	</div>
-	<div style="width: 10%; float: left; text-align: right;">
+	<div style="width: 20%; float: left; text-align: right;">
+		<button class="clearAllFilters">Clear filters</button>
 		<button class="toggleFilters">Toggle filters</button>
 	</div>
 </div>
@@ -564,6 +550,20 @@ jQuery(function() {
 	/*width: 120px;*/
 	margin-right: .5em;
 }
+
+
+[data-filter-name="subject"]{	width: 	97px;	}
+[data-filter-name="action"]{	width: 	107px;	}
+[data-filter-name="location"]{	width: 	87px;	}
+[data-filter-name="object"]{	width: 	110px;	}
+[data-filter-name="category"]{	width: 	106px;	}
+[data-filter-name="date"]{		width: 	58px;	}
+[data-filter-name="country"]{	width: 	103px;	}
+[data-filter-name="geography"]{	width: 	120px;	}
+[data-filter-name="archetype"]{	width: 	109px;	}
+[data-filter-name="archetype"]{	width: 	109px;	}
+[data-filter-name="archetype2"]{width: 	146px;	}
+
 .filter .items{
 	height: 150px;
 	overflow-x: hidden;

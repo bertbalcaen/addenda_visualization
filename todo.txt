@@ -3,13 +3,12 @@
 - lightbox
 	- adjust detail page
 
-- free text search
-- compress data
-
 - history
-	- pressing back btn doesn't work
 	- paging and history doesn't work -> page param is dropped
 - remember filter toggle state
+
+- compress data
+	- remove fields that are not necessary
 
 - move inline styles to CSS
 - structure code
@@ -17,11 +16,6 @@
 
 
 ------------
-
-Glad to hear you are liking it! Absolutely, a good way would be to use manualFilter. Basically on every search use something like (http://kiro.me/projects/fuse.html) to search. Then return the cids, update a manualFilter with them and, boom, problem solved. You'd still be able to compose this filter with other, categorical filters if you wanted to.
-
-
--------------
 
 var serial_maker = function ( ) {
 // Produce an object that produces unique strings. A

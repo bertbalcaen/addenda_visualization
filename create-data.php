@@ -1,4 +1,6 @@
 <?php
+require_once(dirname(__FILE__) . '/../../../../default/settings.php');
+
 define('FORMAT', 'json');
 
 $vocabularies = array(
@@ -48,8 +50,8 @@ $vocabularies = array(
 	),
 );
 
-mysql_connect('localhost', 'root', '');
-mysql_select_db('addenda');
+mysql_connect($databases['default']['default']['host'], $databases['default']['default']['username'], $databases['default']['default']['password']);
+mysql_select_db($databases['default']['default']['database']);
 $q = 'SELECT * FROM node WHERE type="memory"';
 // $q .= ' LIMIT 100';
 $res = mysql_query($q);
@@ -60,8 +62,8 @@ while ($row = mysql_fetch_assoc($res)) {
 	$memory['id'] = (int)$row['nid'];
 	$memory['title'] = $row['title'];
 	$memory['thumb'] = getThumb($row['nid']);
-	$memory['duration'] = getDuration($row['nid']);
-	$memory['start_time'] = getStartTime($row['nid']);
+	// $memory['duration'] = getDuration($row['nid']);
+	// $memory['start_time'] = getStartTime($row['nid']);
 	$memory['url'] = getField($row['nid'], 'field_data_field_file_url');
 	foreach($vocabularies as $vId => $props) { 
 		$terms = getTerms($vId, $row['nid'], $props['type']);
