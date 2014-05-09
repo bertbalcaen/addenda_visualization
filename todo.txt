@@ -1,8 +1,6 @@
 - most important
 	- design
-	- search
 	- thumbs
-	- detail
 
 - design cleanup
 	- btns: same style as main menu
@@ -12,8 +10,8 @@
 
 - remember filter toggle state
 
-- compress data
-	- remove fields that are not necessary
+- complete refresh when going back ... can it be avoided?
+- page get param is dropped
 
 - move inline styles to CSS
 - load include autocomplete

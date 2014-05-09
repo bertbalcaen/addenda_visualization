@@ -13,3 +13,7 @@ Installation
 
 This will greatly reduce the download size of the JSON data for the visualization.
 
+Lightbox
+========
+
+Memory detail page is shown in a lightbox. Simple solution to prevent the navigation from showing up in the lightbox: added and `<?php if (empty($_GET['lightbox'])): ?>` around the `<header>` in /sites/all/themes/addenda_zen/templates/page.tpl.php.

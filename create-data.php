@@ -98,7 +98,7 @@ if (FORMAT == 'json') {
 		}
 	}
 	$vals = array_unique($vals);
-	sort($vals);
+	sort($vals, SORT_STRING | SORT_FLAG_CASE);
 	function prepareForExport($s){
 		return $s . PHP_EOL;
 	}

@@ -150,12 +150,13 @@ jQuery(function() {
 			},
 			select: function(event, ui) {
 				setTimeout(function(){
-					renderUI(),
+					updateUI(),
 					100
 				});
 				return true;
 			}
 		});
+
 		jQuery("#searchKeyword").keyup(function(){
 			var searchKeyword = jQuery(this).val().toLowerCase();
 			var filter = collection.filters.freeTextSearch;
@@ -177,7 +178,7 @@ jQuery(function() {
 			} else {
 				filter.clearQuery();
 			}
-			renderUI();
+			updateUI();
 		});
 
 		jQuery(".clearSearchKeyword").click(function(){
@@ -192,7 +193,7 @@ jQuery(function() {
 			// console.log(" clicked filter: " + filterName + " value " + val);
 			applyFilter(filterName, val);
 			// update UI
-			renderUI();
+			updateUI();
 		});
 
 		function applyFilter(filterName, val){
@@ -205,7 +206,7 @@ jQuery(function() {
 		jQuery('#activeFilters .clear').live('click', function(){
 			var filterName = jQuery(this).attr('data-filter-name');
 			clearFilter(filterName);
-			renderUI();
+			updateUI();
 		});
 
 		// clear filter when clicking on button
@@ -224,7 +225,7 @@ jQuery(function() {
 				clearFilter(filterName);
 			}
 			jQuery("#searchKeyword").val('');
-			renderUI();
+			updateUI();
 		}
 
 		// toggle filters
@@ -239,11 +240,14 @@ jQuery(function() {
 				var val = QueryString[filterName];
 				if (val) {
 					applyFilter(filterName, decodeURIComponent(val));
+				} else {
+					clearFilter(filterName);
 				}
 			}
 
 			if(QueryString.searchKeyword){
 				jQuery('#searchKeyword').val(decodeURIComponent(QueryString.searchKeyword));
+			} else {
 				jQuery('#searchKeyword').val();
 			}
 
@@ -253,13 +257,17 @@ jQuery(function() {
 
 		}
 
+		jQuery(window).bind("popstate", function(evt) {
+			window.location.reload(false); 
+		});
+
 		checkQueryString();
 
-		renderUI();
+		updateUI();
 
 	}
 
-	function renderUI(){
+	function updateUI(){
 		for (var i = uiElements.length - 1; i >= 0; i--) {
 			uiElements[i].render();
 		}
@@ -363,7 +371,7 @@ jQuery(function() {
 						var filter = collection.filters[filterName];
 						title += humanFilterName(filterName) + ': ' + memory[filterName] + "\n";
 					}
-					var url = 'node/' + memory.id;
+					var url = 'node/' + memory.id + '?lightbox=1';
 					html += '<a href="' + url + '" target="_blank" + title="' + title + '" videoUrl="' + memory.url + '" start_time="' + memory.start_time + '"><img src="http://staging03.dough.be/addenda/sites/default/files/' + memory.thumb + '" width="75"></a>';
 				});
 				jQuery("#results").html(html);
@@ -390,8 +398,12 @@ jQuery(function() {
 		jQuery('#filters').show();
 
 		jQuery('#results a').live('click', function(){
-			jQuery.colorbox({href: jQuery(this).attr('href')});
-			jQuery.colorbox.resize({width: 800, height: 600});
+			jQuery.colorbox({
+				href: jQuery(this).attr('href'), 
+				iframe: true,
+				width: '100%',
+				height: 600
+			});
 			return false;
 		});
 
@@ -701,7 +713,7 @@ jQuery(function() {
 .ui-corner-all{
 	-moz-border-radius: 0;
 	-webkit-border-radius: 0;
-	border-raduis: 0;
+	border-radius: 0;
 }
 
 .ui-autocomplete a.ui-corner-all{
