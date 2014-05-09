@@ -79,6 +79,29 @@ while ($row = mysql_fetch_assoc($res)) {
 if (FORMAT == 'json') {
 	// file_put_contents('memories.json', 'var data = ' . json_encode($memories));
 	file_put_contents('memories.json', json_encode($memories));
+	$vals = [];
+	foreach ($memories as $memory) {
+		foreach ($memory as $key => $value) {
+			if (in_array($key, array('thumb', 'url'))) {
+				continue;
+			}
+			if (!is_array($value)) {
+				$values = array($value);
+			} else {
+				$values = $value;
+			}
+			foreach ($values as $value) {
+				$vals[] = $value;
+			}
+		}
+	}
+	$vals = array_unique($vals);
+	sort($vals);
+	function prepareForExport($s){
+		return utf8_encode($s) . PHP_EOL;
+	}
+	$vals = array_map('prepareForExport', $vals);
+	file_put_contents('autocomplete-values.txt', $vals);
 } elseif(FORMAT == 'csv'){
 	$output = fopen("memories.csv",'w') or die("Can't open memories.csv");
 	$headers = array('id','name','thumb', 'start', 'duration', 'url');
@@ -92,7 +115,6 @@ if (FORMAT == 'json') {
 	}
 	
 }
-
 
 function getThumb($nodeId){
 	$q = 'SELECT * FROM file_usage JOIN file_managed ON file_usage.fid = file_managed.fid WHERE id=' . $nodeId;
@@ -117,7 +139,7 @@ function getTerms($vId, $nodeId, $type){
 			// var_dump($nodeId);
 			// var_dump($terms);
 			// return null;
-			return '--none--';
+			return 'none';
 		}
 	} else if($type == 'multiple'){
 		return $terms;

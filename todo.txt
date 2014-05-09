@@ -1,16 +1,24 @@
+- most important
+	- design
+	- search
+	- thumbs
+	- detail
+
+- encoding in json and search: check besançon
+
 - design cleanup
-	- hardcode filters widths (check http://addenda_drupal.dev/explore?geography=Tenerife&category=TRAVEL&action=shopping)
+	- btns: same style as main menu
+	- filters as tab: make it more clear that it's collapsible
 - lightbox
 	- adjust detail page
 
-- history
-	- paging and history doesn't work -> page param is dropped
 - remember filter toggle state
 
 - compress data
 	- remove fields that are not necessary
 
 - move inline styles to CSS
+- load include autocomplete
 - structure code
 
 

@@ -1,3 +1,4 @@
+<script src="//code.jquery.com/ui/1.8.7/jquery-ui.js"></script>
 <?php  
 drupal_add_js(drupal_get_path('theme','addenda_zen') . '/explore-visualization/js/underscore-min.js');
 drupal_add_js(drupal_get_path('theme','addenda_zen') . '/explore-visualization/js/pourover.js');
@@ -11,14 +12,13 @@ jQuery(function() {
 	var collection;
 	var view;
 	var uiElements = [];
-	var ITEMS_PER_PAGE = 7 * 16;
+	var ITEMS_PER_PAGE = 8 * 16;
 	var activeFilters = [];
 	var lastUrl = 'explore' + window.location.search;
 
 	jQuery('#filters').hide();
 
 	jQuery.getJSON('<?php print path_to_theme(); ?>/explore-visualization/memories.json', function(memories){
-			console.log(memories.length);
 			collection = new PourOver.Collection(memories);
 			initView();
 			initUI();
@@ -54,7 +54,8 @@ jQuery(function() {
 				}
 				for (var k = values.length - 1; k >= 0; k--) {
 					var value = values[k]
-					if (filterValues.indexOf(value) == -1 && value.length && value != '--none--') {
+					// if (filterValues.indexOf(value) == -1 && value.length && value != '--none--') {
+					if (filterValues.indexOf(value) == -1 && value.length) {
 						filterValues.push(value);
 					}
 				}
@@ -141,6 +142,17 @@ jQuery(function() {
 		var freeTextSearchFilter = PourOver.makeManualFilter("freeTextSearch");
 		collection.addFilters(freeTextSearchFilter);
 
+		jQuery("#searchKeyword").autocomplete({
+			source: function(request, response) {
+				jQuery.getJSON("<?php print path_to_theme(); ?>/explore-visualization/autocomplete-search.php", {
+					term: request.term
+				}, response);
+			},
+			select: function( event, ui ) {
+				renderUI();
+				return true;
+			}
+		});
 		jQuery("#searchKeyword").keyup(function(){
 			var searchKeyword = jQuery(this).val().toLowerCase();
 			var filter = collection.filters.freeTextSearch;
@@ -672,5 +684,31 @@ jQuery(function() {
 	font-weight: normal;
 	color: #8d887a;
 	border-color: #8d887a;
+}
+
+.ui-autocomplete{
+	font-family: Bitter;
+	font-size: 1em;
+	list-style-type: none;
+	width: 200px;
+	margin: 0;
+	padding: 0;
+}
+
+.ui-corner-all{
+	-moz-border-radius: 0;
+	-webkit-border-radius: 0;
+	border-raduis: 0;
+}
+
+.ui-autocomplete a.ui-corner-all{
+	display: block;
+	width: 100%;
+}
+
+.ui-state-hover, .ui-widget-content .ui-state-hover, .ui-widget-header .ui-state-hover, .ui-state-focus, .ui-widget-content .ui-state-focus, .ui-widget-header .ui-state-focus {
+	border: none;
+	background: #8d887a;
+	font-weight: normal;
 }
 </style>
