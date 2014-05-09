@@ -148,8 +148,11 @@ jQuery(function() {
 					term: request.term
 				}, response);
 			},
-			select: function( event, ui ) {
-				renderUI();
+			select: function(event, ui) {
+				setTimeout(function(){
+					renderUI(),
+					100
+				});
 				return true;
 			}
 		});
