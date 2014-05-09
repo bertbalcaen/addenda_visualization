@@ -10,5 +10,5 @@ while (($val = fgets($fp, 4096)) !== false) {
 		}
 	}
 }
-header('Content-Type: text/json; charset=utf-8');
+// header('Content-Type: text/json; charset=utf-8');
 print json_encode($matches);

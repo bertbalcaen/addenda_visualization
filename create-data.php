@@ -52,6 +52,8 @@ $vocabularies = array(
 
 mysql_connect($databases['default']['default']['host'], $databases['default']['default']['username'], $databases['default']['default']['password']);
 mysql_select_db($databases['default']['default']['database']);
+mysql_query('SET NAMES utf8');
+
 $q = 'SELECT * FROM node WHERE type="memory"';
 // $q .= ' LIMIT 100';
 $res = mysql_query($q);
@@ -98,7 +100,7 @@ if (FORMAT == 'json') {
 	$vals = array_unique($vals);
 	sort($vals);
 	function prepareForExport($s){
-		return utf8_encode($s) . PHP_EOL;
+		return $s . PHP_EOL;
 	}
 	$vals = array_map('prepareForExport', $vals);
 	file_put_contents('autocomplete-values.txt', $vals);
@@ -142,6 +144,9 @@ function getTerms($vId, $nodeId, $type){
 			return 'none';
 		}
 	} else if($type == 'multiple'){
+		if (empty($terms)) {
+			$terms = array('none');
+		}
 		return $terms;
 	}
 }

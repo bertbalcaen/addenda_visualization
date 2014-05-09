@@ -4,8 +4,6 @@
 	- thumbs
 	- detail
 
-- encoding in json and search: check besançon
-
 - design cleanup
 	- btns: same style as main menu
 	- filters as tab: make it more clear that it's collapsible
