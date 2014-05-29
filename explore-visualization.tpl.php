@@ -372,7 +372,16 @@ jQuery(function() {
 						title += humanFilterName(filterName) + ': ' + memory[filterName] + "\n";
 					}
 					var url = 'node/' + memory.id + '?lightbox=1';
-					html += '<a href="' + url + '" target="_blank" + title="' + title + '" videoUrl="' + memory.url + '" start_time="' + memory.start_time + '"><img src="http://staging03.dough.be/addenda/sites/default/files/' + memory.thumb + '" width="75"></a>';
+					// filename: 0563-6.jpg
+					// mem title: Memory 0563 - 7 
+					var imgSrc = memory.title.replace('Memory ', '');
+					imgSrc = imgSrc.replace(' - ', '-');
+					var imgSrcAlt = imgSrc + '-01';
+					imgSrc += '.jpg';
+					imgSrcAlt += '.jpg';
+					imgSrc = '/sites/default/files/Thumbs_small/' + imgSrc;
+					imgSrcAlt = '/sites/default/files/Thumbs_small/' + imgSrcAlt;
+					html += '<a href="' + url + '" target="_blank" + title="' + title + '" videoUrl="' + memory.url + '" start_time="' + memory.start_time + '"><img src="' + imgSrc + '" width="75" onerror="this.src = \"' + imgSrcAlt + '\""></a>';
 				});
 				jQuery("#results").html(html);
 				updateHistory();

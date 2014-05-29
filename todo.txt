@@ -14,7 +14,7 @@
 - page get param is dropped
 
 - move inline styles to CSS
-- load include autocomplete
+- load Drupal's autocomplete instead of from server
 - structure code
 
 
