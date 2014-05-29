@@ -133,6 +133,11 @@ jQuery(function() {
 					html += '</ul>';
 					var filterElement = jQuery('[data-filter-name="' + this.filter.name + '"]');
 					filterElement.find('.items').html(html);
+					if (vals.state) {
+						filterElement.addClass('active');
+					} else {
+						filterElement.removeClass('active');
+					}
 				}
 			});
 			uiElements.push(select);
@@ -207,6 +212,14 @@ jQuery(function() {
 			var filterName = jQuery(this).attr('data-filter-name');
 			clearFilter(filterName);
 			updateUI();
+		});
+
+		jQuery('.filter .clear').click(function(){
+			var filter = jQuery(this).parents("[data-filter-name]");
+			var filterName = filter.attr('data-filter-name');
+			clearFilter(filterName);
+			updateUI();
+			return false;
 		});
 
 		// clear filter when clicking on button
@@ -374,14 +387,16 @@ jQuery(function() {
 					var url = 'node/' + memory.id + '?lightbox=1';
 					// filename: 0563-6.jpg
 					// mem title: Memory 0563 - 7 
-					var imgSrc = memory.title.replace('Memory ', '');
-					imgSrc = imgSrc.replace(' - ', '-');
-					var imgSrcAlt = imgSrc + '-01';
-					imgSrc += '.jpg';
-					imgSrcAlt += '.jpg';
-					imgSrc = '/sites/default/files/Thumbs_small/' + imgSrc;
-					imgSrcAlt = '/sites/default/files/Thumbs_small/' + imgSrcAlt;
-					html += '<a href="' + url + '" target="_blank" + title="' + title + '" videoUrl="' + memory.url + '" start_time="' + memory.start_time + '"><img src="' + imgSrc + '" width="75" onerror="this.src = \"' + imgSrcAlt + '\""></a>';
+					// var imgSrc = memory.title.replace('Memory ', '');
+					// imgSrc = imgSrc.replace(' - ', '-');
+					// var imgSrcAlt = imgSrc + '-01';
+					// imgSrc += '.jpg';
+					// imgSrcAlt += '.jpg';
+					// imgSrc = '/sites/default/files/Thumbs_small/' + imgSrc;
+					// imgSrcAlt = '/sites/default/files/Thumbs_small/' + imgSrcAlt;
+					// onerror="this.src = \"' + imgSrcAlt+ '\""
+					var imgSrc = 'http://staging03.dough.be/addenda/sites/default/files/' + memory.thumb;
+					html += '<a href="' + url + '" target="_blank" + title="' + title + '" videoUrl="' + memory.url + '" start_time="' + memory.start_time + '"><img src="' + imgSrc + '" width="75"  ></a>';
 				});
 				jQuery("#results").html(html);
 				updateHistory();
@@ -477,22 +492,22 @@ jQuery(function() {
 	<div class="filterGroup">
 		<h1>Action</h1>
 		<div class="filter" data-filter-name="subject">
-			<h2><span class="closeFilter">x</span> Subject</h2>
+			<h2><a href="" class="clear">x</a> Subject</h2>
 			<div class="items">
 			</div>
 		</div>
 		<div class="filter" data-filter-name="action">
-			<h2>Action</h2>
+			<h2><a href="" class="clear">x</a> Action</h2>
 			<div class="items">
 			</div>
 		</div>
 		<div class="filter" data-filter-name="location">
-			<h2>Location</h2>
+			<h2><a href="" class="clear">x</a> Location</h2>
 			<div class="items">
 			</div>
 		</div>
 		<div class="filter last" data-filter-name="object">
-			<h2>Object</h2>
+			<h2><a href="" class="clear">x</a> Object</h2>
 			<div class="items">
 			</div>
 		</div>
@@ -500,22 +515,22 @@ jQuery(function() {
 	<div class="filterGroup">
 		<h1>Specification</h1>
 		<div class="filter" data-filter-name="category">
-			<h2>Category</h2>
+			<h2><a href="" class="clear">x</a> Category</h2>
 			<div class="items">
 			</div>
 		</div>
 		<div class="filter" data-filter-name="date">
-			<h2>Date</h2>
+			<h2><a href="" class="clear">x</a> Date</h2>
 			<div class="items">
 			</div>
 		</div>
 		<div class="filter" data-filter-name="country">
-			<h2>Country</h2>
+			<h2><a href="" class="clear">x</a> Country</h2>
 			<div class="items">
 			</div>
 		</div>
 		<div class="filter last" data-filter-name="geography">
-			<h2>Geography</h2>
+			<h2><a href="" class="clear">x</a> Geography</h2>
 			<div class="items">
 			</div>
 		</div>
@@ -523,12 +538,12 @@ jQuery(function() {
 	<div class="filterGroup last">
 		<h1>Archetype</h1>
 		<div class="filter" data-filter-name="archetype">
-			<h2>Formal</h2>
+			<h2><a href="" class="clear">x</a> Formal</h2>
 			<div class="items">
 			</div>
 		</div>
 		<div class="filter last" data-filter-name="archetype2">
-			<h2>Thematic</h2>
+			<h2><a href="" class="clear">x</a> Thematic</h2>
 			<div class="items">
 			</div>
 		</div>
@@ -644,6 +659,13 @@ jQuery(function() {
 	margin-right: 0em;
 }
 
+.filter .clear{
+	visibility: hidden;
+}
+
+.filter.active .clear{
+	visibility: visible;
+}
 
 [data-filter-name="subject"]{	width: 	115px;	}
 [data-filter-name="action"]{	width: 	115px;	}
