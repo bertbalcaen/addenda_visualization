@@ -12,7 +12,7 @@ jQuery(function() {
 	var collection;
 	var view;
 	var uiElements = [];
-	var ITEMS_PER_PAGE = 8 * 16;
+	var ITEMS_PER_PAGE = 12 * 16;
 	var activeFilters = [];
 	var lastUrl = 'explore' + window.location.search;
 
@@ -459,23 +459,25 @@ jQuery(function() {
 
 });
 </script>
-<div class="clearfix">
-	<div id="search" style="width: 80%; float: left;">
+<div class="filterControllers">
+	<div class="clears">
+		<button class="toggleFilters">Toggle filters</button>
+		<button class="clearAllFilters">Clear filters</button>
+		<span id="activeFilters"></span>
+	</div>
+	<div class="search">
 		<label for="searchKeyword">Search</label>
 		<input type="text" name="searchKeyword" id="searchKeyword" placeholder="Keywords">
 		<button class="clearSearchKeyword">Clear search</button>
-		<span id="activeFilters"></span>
+		
 	</div>
-	<div style="width: 20%; float: left; text-align: right;">
-		<button class="clearAllFilters">Clear filters</button>
-		<button class="toggleFilters">Toggle filters</button>
-	</div>
-</div>
+	
+</div>	
 <div id="filters" class="clearfix">
 	<div class="filterGroup">
 		<h1>Action</h1>
 		<div class="filter" data-filter-name="subject">
-			<h2>Subject</h2>
+			<h2><span class="closeFilter">x</span> Subject</h2>
 			<div class="items">
 			</div>
 		</div>
@@ -532,14 +534,69 @@ jQuery(function() {
 		</div>
 	</div>
 </div>
-<div class="clearfix" id="paginationAndNumResults">
-	<div id="pagination" class="pager clearfix" style="width: 70%; float: left;"></div>
-	<div id="numResults" style="width: 30%; float: left;"></div>
+<div id="paginationAndNumResults">
+	<div id="pagination" class="pager"></div>
+	<div id="numResults"></div>
 </div>
 <div id="results">
 </div>
 
 <style>
+.filterControllers .search{
+	width: 30%; 
+	float: left;
+	text-align: right;
+}
+
+.filterControllers .clears{
+	width: 70%; 
+	float: left; 
+
+}
+
+.search{
+	/*height: 24px;*/
+	overflow: hidden;
+}
+
+.search label{
+	display: inline;
+}
+
+
+
+.filterControllers{
+	overflow: hidden;
+	padding: 0;
+	margin: 0 0 1.5rem 0;
+	width: 100%;
+}
+
+#activeFilters{
+	font-size: 0.8125rem;
+}
+
+.filterControllers button{
+	border: 1px solid #000;
+	background: transparent;
+	padding: 0.25rem 0.5rem;
+	font-size: 0.75rem;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+}
+
+.filterControllers input{
+	border: 1px solid #000;
+	background: #f4f0e9;
+	padding: 0.25rem;
+	font-size: 0.8125rem;
+}
+
+.filterControllers label{
+	font-size: 0.8125rem;
+	color: #8d887a;
+}
+
 #activeFilters .clear{
 	text-transform: lowercase;
 	cursor: pointer;
@@ -549,15 +606,6 @@ jQuery(function() {
 	text-decoration: line-through;
 }
 
-#search{
-	height: 24px;
-	overflow: hidden;
-}
-
-#search label{
-	display: inline;
-}
-
 #filters{
 	/*width: 100%;*/
 	overflow: hidden;
@@ -565,52 +613,60 @@ jQuery(function() {
 
 .filterGroup{
 	float: left;
-	border-right: 1px solid #8d887a;
-	padding-right: .5em;
-	margin-right: 1em;
+	/*border-right: 1px solid #8d887a;*/
+	padding-right: 0em;
+	/*margin-right: 10px;*/
 }
 .filterGroup.last{
 	border: none;
+	padding-right: 0;
+	margin-right: 0;
 }
 .filterGroup h1{
-	font-size: 1.17em;
+	font-size: 0.75rem;
+	font-weight: bold;
+	text-transform: uppercase;
+	border-bottom: 1px solid #8D887A;
 	margin: 0;
-	color: #8d887a;
+	color: #333;
 }
 .filterGroup h2{
 	margin: 0;
-	font-size: 1em;
-	font-weight: bold;
+	font-size: 0.75rem;
+	text-transform: uppercase;
+	font-weight: normal;
+	letter-spacing: 1px;
+	color: #8d887a;
 }
 .filter{
 	float: left;
 	/*width: 120px;*/
-	margin-right: .5em;
+	margin-right: 0em;
 }
 
 
-[data-filter-name="subject"]{	width: 	97px;	}
-[data-filter-name="action"]{	width: 	107px;	}
-[data-filter-name="location"]{	width: 	87px;	}
-[data-filter-name="object"]{	width: 	110px;	}
-[data-filter-name="category"]{	width: 	106px;	}
-[data-filter-name="date"]{		width: 	58px;	}
-[data-filter-name="country"]{	width: 	103px;	}
+[data-filter-name="subject"]{	width: 	115px;	}
+[data-filter-name="action"]{	width: 	115px;	}
+[data-filter-name="location"]{	width: 	115px;	}
+[data-filter-name="object"]{	width: 	115px;	}
+[data-filter-name="category"]{	width: 	120px;	}
+[data-filter-name="date"]{		width: 	79px;	}
+[data-filter-name="country"]{	width: 	113px;	}
 [data-filter-name="geography"]{	width: 	120px;	}
-[data-filter-name="archetype"]{	width: 	109px;	}
-[data-filter-name="archetype"]{	width: 	109px;	}
-[data-filter-name="archetype2"]{width: 	146px;	}
+[data-filter-name="archetype"]{	width: 	150px;	}
+[data-filter-name="archetype2"]{width: 	158px;	}
 
 .filter .items{
-	height: 150px;
+	height: 160px;
 	overflow-x: hidden;
 	overflow-y: scroll;
 	text-transform: lowercase;
 	font-size: .75em;
-	border-right: 1px solid #8d887a;
-	margin: .5em 0;
+	border-left: 1px solid #dfd7c2;
+	margin: 0.25rem 0 2rem 0;
 	font-size: .75em;
 }
+
 .filter .items ul{
 	list-style: none;
 	padding: 0;
@@ -622,28 +678,53 @@ jQuery(function() {
 	margin-right: 0;
 }
 .filter.last .items{
-	border-right: none;
+	/*border-right: 1px solid #dfd7c2;*/
 }
+
+
 .filter .items li{
+	padding: 1px 0 1px 10px;
 	width: 100%;
 	white-space: nowrap;
 }
 .filter .items li:hover{
 	background: #8d887a;
+	color: #fff;
 }
 
 .filter .items li em{
-	color: #8d887a;
+	color: #AFA999;
 }
 .filter .items li:hover em{
-	color: #fff;
+	color: #AFA999;
 }
 .filter .items .selected{
-	font-weight: bold;
+	font-weight: normal;
+	background: #8d887a;
+	color: #fff;
+}
+
+
+
+#pagination{
+	width: 70%; 
+	float: left;
+	font-size: 0.75rem;
+}
+
+#numResults{
+	width: 30%; 
+	float: left;
+	text-align: right;
 }
 
 #paginationAndNumResults{
-	margin: 1em 0 .25em 0;
+	margin: 0em 0 .25em 0;
+	overflow: hidden;
+	width: 100%;
+	font-size: 0.75rem;
+	background: transparent;
+	border-top: 1px solid #8D887A;
 }
 
 #results a{
@@ -655,10 +736,6 @@ jQuery(function() {
 #results a.selected img{
 	-webkit-filter: grayscale;
 	-webkit-filter: brightness(50%); 
-}
-
-#numResults{
-	text-align: right;
 }
 
 .pager {
@@ -673,8 +750,8 @@ jQuery(function() {
 .pager a, .pager span {
 	display: block;
 	float: left;
-	padding: 0 0.5em;
-	margin-right: 5px;
+	padding: 0 2px;
+	margin-right: 2px;
 	margin-bottom: 5px;
 	border-right: 1px solid #8d887a;
 	width: 20px;
@@ -712,11 +789,16 @@ jQuery(function() {
 
 .ui-autocomplete{
 	font-family: Bitter;
-	font-size: 1em;
+	font-size: 0.875rem;
 	list-style-type: none;
 	width: 200px;
 	margin: 0;
 	padding: 0;
+}
+
+.ui-autocomplete li a{
+	background: #f4f0e9;
+	padding-left: 5px;
 }
 
 .ui-corner-all{
